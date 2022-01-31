@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="/img/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png">
+  <title>Process Payment</title>
+  <link rel="stylesheet" href="/css/toastr.min.css"/>
+  <link rel="stylesheet" href="/css/style.build.tailwind.css">
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    let amount = /*[[${amount}]]*/
+      window.onload = function () {
+        if (amount !== '' && amount > 0) {
+          document.getElementById('amountTag').innerText = `€${amount}`
+        }
+      }
+    let msg = /*[[${msg}]]*/
+    /*]]>*/
+  </script>
+</head>
+<body class="font-sans bg-green-100 w-full h-screen">
+<div class="w-96 mx-auto py-12">
+  <img class="h-12 mx-auto mb-4" src="/img/logo.png" alt="Banckr.me"/>
+  <div class="shadow rounded-lg bg-white w-full text-center overflow-hidden">
+    <div class="p-8">
+      <p class="font-bold" th:text="${name}"></p>
+      <p class="text-sm text-gray-500" th:text="${iban}"></p>
+      <p class="text-green-500 text-5xl font-bold mt-3" id="amountTag"></p>
+    </div>
+    <div class="p-8 bg-gray-100">
+      <div id="payments-container">
+      <div id="paymentForm">
+        <a href="javascript:void(0)" class="font-semibold hover:underline flex items-center mb-4" id="btnBack">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+               xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          <span class="ml-2">Back</span>
+        </a>
+        <form id="formPayment" method="post">
+          <div class="text-left">
+            <input type="hidden" name="details" th:value="${msg}"/>
+            <input type="hidden" name="amount" th:value="${amount}"/>
+            <input type="hidden" name="iban" th:value="${iban}"/>
+            <input type="hidden" name="name" th:value="${name}"/>
+            <div class="mb-3">
+              <label for="email" class="block mb-2">Email</label>
+              <input type="email" id="email" name="email" placeholder="Email address"
+                     class="hidden w-full lg:flex items-center text-sm leading-6 text-gray-400 rounded ring-1 ring-green-800/10 shadow-sm py-1.5 pl-2 pr-3 hover:ring-green-300"/>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="block mb-2">Password</label>
+              <input type="password" id="password" name="password" placeholder="Password"
+                     class="hidden w-full lg:flex items-center text-sm leading-6 text-gray-400 rounded ring-1 ring-green-800/10 shadow-sm py-1.5 pl-2 pr-3 hover:ring-green-300"/>
+            </div>
+            <button type="submit" id="btnPay"
+                    class="w-full shadow text-sm font-semibold bg-green-500 text-white py-3 px-4 rounded hover:bg-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed">
+              Pay
+            </button>
+          </div>
+        </form>
+      </div>
+      <div class="hidden" id="inputForm">
+        <form id="formInput">
+          <div class="text-left">
+            <div class="mb-3">
+              <label for="amountI" class="block mb-2">Amount (€)</label>
+              <input type="text" id="amountI" name="amount" placeholder="Amount"
+                     class="hidden w-full lg:flex items-center text-sm leading-6 text-gray-400 rounded ring-1 ring-green-800/10 shadow-sm py-1.5 pl-2 pr-3 hover:ring-green-300"/>
+            </div>
+            <div class="mb-3">
+              <label for="msg" class="block mb-2">Description</label>
+              <input type="text" id="msg" name="msg" placeholder="Add description"
+                     class="hidden w-full lg:flex items-center text-sm leading-6 text-gray-400 rounded ring-1 ring-green-800/10 shadow-sm py-1.5 pl-2 pr-3 hover:ring-green-300"/>
+            </div>
+            <button type="button" id="btnNext"
+                    class="w-full shadow text-sm font-semibold bg-green-500 text-white py-3 px-4 rounded hover:bg-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900">
+              Next
+            </button>
+          </div>
+        </form>
+      </div>
+      </div>
+      <div class="hidden" id="google-2fa">
+        <form id="formGoogle2FA" method="post">
+          <input type="hidden" name="details" th:value="${msg}"/>
+          <input type="hidden" name="amount" th:value="${amount}"/>
+          <input type="hidden" name="iban" th:value="${iban}"/>
+          <input type="hidden" name="name" th:value="${name}"/>
+          <div class="text-left">
+            <div class="mb-3">
+              <label for="google2FA" class="block mb-2">Google 2FA Code</label>
+              <input type="text" id="google2FA" name="google2FACode" placeholder="Google 2FA Code"
+                     class="hidden w-full lg:flex items-center text-sm leading-6 text-gray-400 rounded ring-1 ring-green-800/10 shadow-sm py-1.5 pl-2 pr-3 hover:ring-green-300"/>
+            </div>
+            <button type="submit" id="btnConfirmGoogle2FA"
+                    class="w-full shadow text-sm font-semibold bg-green-500 text-white py-3 px-4 rounded hover:bg-green-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900">
+              Confirm
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/js/jquery-3.6.0.min.js"></script>
+<script src="/js/toastr.min.js"></script>
+<script>
+  $(document).ready(function() {
+    if (amount === '' || amount <= 0) {
+      $('#paymentForm').addClass('hidden')
+      $('#inputForm').removeClass('hidden')
+    } else {
+      $('#amountI').attr('readonly', true)
+      $('#msg').attr('readonly', true)
+    }
+  })
+  $(document).on('click', '#btnBack', function () {
+    // Hide payment form and show input form
+    $('#paymentForm').addClass('hidden')
+    $('#inputForm').removeClass('hidden')
+    $('#amountI').val(amount)
+    $('#msg').val(msg)
+  })
+  // Next button
+  $(document).on('click', '#btnNext', function (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    $('#paymentForm').removeClass('hidden')
+    $('#inputForm').addClass('hidden')
+    const formData = new FormData($('#formInput')[0])
+    for (let pair of formData.entries()) {
+      if (pair[0] === 'msg') {
+        msg = pair[1]
+        $('[name="details"]').val(pair[1])
+      }
+      if (pair[0] === 'amount') {
+        amount = pair[1]
+        $('[name="amount"]').val(pair[1])
+        $('#amountTag').text(`€${amount}`)
+      }
+    }
+  })
+  $(document).on('click', '#btnPay', function (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    const btn = $(this)
+    btn.attr('disabled', true)
+    const params = {}
+    const formData = new FormData($('#formPayment')[0])
+    for (let pair of formData.entries()) {
+      params[pair[0]] = pair[1]
+    }
+    processPayment(params, btn)
+  })
+  $(document).on('click', '#btnConfirmGoogle2FA', function (e) {
+    console.log('in')
+    e.preventDefault()
+    e.stopPropagation()
+    const btn = $(this)
+    const code = $('#formGoogle2FA').find('[name="google2FACode"]').val()
+    console.log(code)
+    if (code !== '' && !isNaN(code)) {
+      btn.attr('disabled', true)
+      const params = {}
+      const formData = new FormData($('#formGoogle2FA')[0])
+      for (let pair of formData.entries()) {
+        params[pair[0]] = pair[1]
+      }
+      params['email'] = $('#formPayment').find('[name="email"]').val()
+      params['password'] = $('#formPayment').find('[name="password"]').val()
+      processPayment(params, btn)
+    }
+  })
+  function processPayment(params, btn) {
+    $.ajax({
+      url: '/api/process-payment',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(params),
+      dataType: 'json',
+      async: false,
+      cache: false,
+      success: function (response) {
+        btn.removeAttr('disabled')
+        if (response.data.is2FAEnabled && response.data.is2FAEnabled === true) {
+          $('#google-2fa').removeClass('hidden')
+          $('#payments-container').addClass('hidden')
+        } else {
+          toastr.success(response.message)
+          const protocol = window.location.protocol
+          const host = window.location.host
+          window.location.href = `${protocol}//${host}/payment/success/${response.data.walletId}/${response.data.transactionId}`
+        }
+      },
+      error: function (response) {
+        btn.removeAttr('disabled')
+        const res = response.responseJSON
+        if (res.status === 400) {
+          if (res.errors) {
+            for (let index in res.errors) {
+              const error = res.errors[index]
+              const errorMessage = `Field ${error.field} ${error.defaultMessage}`
+              toastr.error(errorMessage)
+            }
+          } else if (typeof res.message !== 'undefined') {
+            toastr.error(res.message)
+          }
+        } else if (res.status === 500 || res.status === 404) {
+          toastr.error(res.message)
+        }
+      }
+    })
+  }
+</script>
+</body>
+</html>
