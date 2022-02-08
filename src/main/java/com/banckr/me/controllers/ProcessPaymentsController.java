@@ -1,8 +1,6 @@
 package com.banckr.me.controllers;
 
-import com.banckr.me.model.Transaction;
-import com.banckr.me.model.TransactionResponse;
-import com.banckr.me.model.Wallet;
+import com.banckr.me.model.*;
 import com.banckr.me.service.ProcessPaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +14,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 
 @Controller
 @RequestMapping(path = "/")
@@ -24,19 +23,40 @@ public class ProcessPaymentsController {
   @Autowired
   private ProcessPaymentService processPaymentService;
 
-  @GetMapping(value = { "{id}", "{id}/{amount}/{msg}"})
-  public String showPaymentForm(@PathVariable("id") String id, @PathVariable(required = false) String amount, @PathVariable(required = false) String msg, Model model) {
-    Wallet wallet = this.processPaymentService.getWallet(id);
-    if (wallet != null) {
-      model.addAttribute("amount", amount == null ? "" : amount);
-      model.addAttribute("name", wallet.getName());
-      model.addAttribute("iban", wallet.getIban());
-      model.addAttribute("msg", msg == null ? "" : msg);
-      return "payment";
-    } else {
-      model.addAttribute("error", "Profile does not exists");
-      return "error";
+  @GetMapping(value = {"{id}", "{id}/{amount}/{msg}"})
+  public String showPaymentForm(@PathVariable("id") String walletId, @PathVariable(required = false) String amount, @PathVariable(required = false) String msg, Model model)
+          throws NoSuchAlgorithmException, InvalidKeyException {
+    int index = walletId.lastIndexOf("-");
+    String profileId = walletId.substring(0, index);
+    Optional<Account> accountOptional = this.processPaymentService.getAccountByProfileId(profileId);
+    if (accountOptional.isPresent()) {
+      Account account = accountOptional.get();
+      String name = "";
+      if (account.getType().equals("person")) {
+        ResponseEntity<VerifoPersonProfile> verifoPersonProfile = this.processPaymentService.getPersonalProfile(profileId);
+        Person person = Objects.requireNonNull(verifoPersonProfile.getBody()).getData();
+        if (person != null) {
+          name = person.getFullName();
+        }
+      } else {
+        ResponseEntity<VerifoCompanyProfile> companyProfile = this.processPaymentService.getCompanyProfile(profileId);
+        Company company = Objects.requireNonNull(companyProfile.getBody()).getData();
+        if (company != null) {
+          name = company.getFullName();
+        }
+      }
+      Wallet wallet = this.processPaymentService.getWallet(profileId, walletId);
+
+      if (wallet != null) {
+        model.addAttribute("amount", amount == null ? "" : amount);
+        model.addAttribute("name", !name.equals("") ? name : wallet.getName());
+        model.addAttribute("iban", wallet.getIban());
+        model.addAttribute("msg", msg == null ? "" : msg);
+        return "payment";
+      }
     }
+    model.addAttribute("error", "Profile does not exists");
+    return "error";
   }
 
   @GetMapping(path = "/payment/success/{walletId}/{transactionId}")
